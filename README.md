@@ -14,7 +14,7 @@ accessSecret = "..."
 Then,
 
 ``` bash
-$ go get github.com/hawx/tw-delete
+$ go get hawx.me/code/tw-delete
 $ tw-delete --auth auth.conf --after 72h --save ./someplace
 ...
 ```
