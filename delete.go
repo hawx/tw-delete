@@ -16,15 +16,11 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/ChimeraCoder/anaconda"
+	"hawx.me/code/xdg"
 )
 
 var (
-	auth           = flag.String("auth", "", "")
-	consumerKey    = flag.String("consumer-key", "", "")
-	consumerSecret = flag.String("consumer-secret", "", "")
-	accessToken    = flag.String("access-token", "", "")
-	accessSecret   = flag.String("access-secret", "", "")
-
+	auth     = flag.String("auth", "", "")
 	after    = flag.String("after", "120h", "")
 	save     = flag.String("save", "", "")
 	noDelete = flag.Bool("no-delete", false, "")
@@ -36,11 +32,6 @@ const HELP = `Usage: tw-delete [options]
   Deletes old tweets. Note: If --save is not given data is not saved!
 
     --auth PATH         # Path to file with auth details
-    --consumer-key KEY
-    --consumer-secret SECRET
-    --access-token TOKEN
-    --access-secret SECRET
-
     --after DUR         # Duration to delete after (default: '120h')
     --save DIR          # Directory to save tweets to
     --no-delete         # Don't delete tweets
@@ -117,33 +108,25 @@ func main() {
 
 	if *help {
 		fmt.Println(HELP)
-		os.Exit(0)
+		return
 	}
 
-	var api *anaconda.TwitterApi
-
+	authPath := xdg.Config("tw-delete/auth")
 	if *auth != "" {
-		// read from path
-		var conf struct {
-			ConsumerKey, ConsumerSecret, AccessToken, AccessSecret string
-		}
-
-		if _, err := toml.DecodeFile(*auth, &conf); err != nil {
-			log.Fatal(err)
-		}
-
-		anaconda.SetConsumerKey(conf.ConsumerKey)
-		anaconda.SetConsumerSecret(conf.ConsumerSecret)
-		api = anaconda.NewTwitterApi(conf.AccessToken, conf.AccessSecret)
-
-	} else if *consumerKey != "" && *consumerSecret != "" && *accessToken != "" && *accessSecret != "" {
-		anaconda.SetConsumerKey(*consumerKey)
-		anaconda.SetConsumerSecret(*consumerSecret)
-		api = anaconda.NewTwitterApi(*accessToken, *accessSecret)
-	} else {
-		fmt.Println(`Either the --auth flag should be set;
-Or credentials must be given using --consumer-key, --consumer-secret, etc.`)
+		authPath = *auth
 	}
+
+	var conf struct {
+		ConsumerKey, ConsumerSecret, AccessToken, AccessSecret string
+	}
+
+	if _, err := toml.DecodeFile(authPath, &conf); err != nil {
+		log.Fatal(err)
+	}
+
+	anaconda.SetConsumerKey(conf.ConsumerKey)
+	anaconda.SetConsumerSecret(conf.ConsumerSecret)
+	api := anaconda.NewTwitterApi(conf.AccessToken, conf.AccessSecret)
 
 	duration, err := time.ParseDuration(*after)
 	if err != nil {

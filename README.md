@@ -2,7 +2,7 @@
 
 Deletes all tweets sent after a duration.
 
-Put credentials in a file (or pass on command line, see `--help`) like,
+Put credentials in a file at `~/.config/tw-delete/auth`,
 
 ``` toml
 consumerKey = "..."
@@ -15,7 +15,7 @@ Then,
 
 ``` bash
 $ go get hawx.me/code/tw-delete
-$ tw-delete --auth auth.conf --after 72h --save ./someplace
+$ tw-delete --after 72h --save ./someplace
 ...
 ```
 
